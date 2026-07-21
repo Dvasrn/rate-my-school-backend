@@ -143,6 +143,19 @@ export const resolvers = {
       return school.toObject();
     },
 
+    removeSchoolPhoto: async (_parent, { input }) => {
+      await connectDB();
+      const school = await School.findById(input.schoolId);
+      if (!school) throw notFound("Сургууль олдсонгүй");
+      school.photos = school.photos ?? [];
+      if (input.photoIndex < 0 || input.photoIndex >= school.photos.length) {
+        throw new GraphQLError("Зураг олдсонгүй");
+      }
+      school.photos.splice(input.photoIndex, 1);
+      await school.save();
+      return school.toObject();
+    },
+
     toggleFavoriteSchool: async (_parent, { input }) => {
       await connectDB();
       const user = await User.findById(input.userId);
