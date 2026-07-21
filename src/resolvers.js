@@ -124,6 +124,42 @@ export const resolvers = {
       return school.toObject();
     },
 
+    addSchoolPhoto: async (_parent, { input }) => {
+      await connectDB();
+      if (!input.photoBase64 || input.photoBase64.length === 0) {
+        throw new GraphQLError("Зураг хоосон байна");
+      }
+      if (input.photoBase64.length > MAX_PHOTO_BASE64_LENGTH) {
+        throw new GraphQLError("Зургийн хэмжээ хэт том байна");
+      }
+      const school = await School.findById(input.schoolId);
+      if (!school) throw notFound("Сургууль олдсонгүй");
+      school.photos = school.photos ?? [];
+      school.photos.push(input.photoBase64);
+      if (school.photos.length > MAX_PHOTOS_PER_SCHOOL) {
+        school.photos = school.photos.slice(-MAX_PHOTOS_PER_SCHOOL);
+      }
+      await school.save();
+      return school.toObject();
+    },
+
+    toggleFavoriteSchool: async (_parent, { input }) => {
+      await connectDB();
+      const user = await User.findById(input.userId);
+      if (!user) throw notFound("Хэрэглэгч олдсонгүй");
+      const schoolExists = await School.exists({ _id: input.schoolId });
+      if (!schoolExists) throw notFound("Сургууль олдсонгүй");
+      user.favoriteSchoolIds = user.favoriteSchoolIds ?? [];
+      const index = user.favoriteSchoolIds.indexOf(input.schoolId);
+      if (index === -1) {
+        user.favoriteSchoolIds.push(input.schoolId);
+      } else {
+        user.favoriteSchoolIds.splice(index, 1);
+      }
+      await user.save();
+      return user.toObject();
+    },
+
     deleteRating: async (_parent, { _id }) => {
       await connectDB();
       const removed = await Rating.findByIdAndDelete(_id).lean();
