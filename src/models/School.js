@@ -12,6 +12,7 @@ const schoolSchema = new mongoose.Schema(
       default: "HighSchool",
     },
     isSchoolPrivate: { type: Boolean, required: true },
+    photos: { type: [String], default: [] },
   },
   { versionKey: false }
 );
