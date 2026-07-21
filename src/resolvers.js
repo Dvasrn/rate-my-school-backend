@@ -203,5 +203,10 @@ export const resolvers = {
   user: {
     schools: (parent) => parent.schools ?? [],
     birthDate: (parent) => parent.birthDate ?? "",
+    favoriteSchoolIds: (parent) => parent.favoriteSchoolIds ?? [],
+  },
+
+  School: {
+    photos: (parent) => parent.photos ?? [],
   },
 };
