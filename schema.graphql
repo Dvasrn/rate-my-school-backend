@@ -1,0 +1,117 @@
+scalar Date
+
+type Query {
+  getAllRating: [rating!]!
+  getAllSchool: [School!]!
+  getAllUser: [user!]!
+  getOneUser(id: ID!): user!
+  getSchoolsRating(schoolId: ID!): [rating!]!
+  getUserRating(id: ID!): [rating!]!
+}
+
+type Mutation {
+  addRating(input: ratingInput!): rating!
+  addSchool(input: schoolInfoInput!): School!
+  choosingSchool(input: choosingSchoolInput!): user!
+  deleteRating(_id: ID!): rating!
+  editRating(input: ratingInput!): rating!
+  editUser(input: editUserInput!): user!
+  login(input: loginInput!): user!
+  signIn(input: userInput!): user!
+}
+
+type School {
+  _id: ID!
+  isSchoolPrivate: Boolean!
+  location: String!
+  schoolName: String!
+  schoolType: SchoolType!
+}
+
+enum SchoolType {
+  Collage
+  HighSchool
+  University
+}
+
+type user {
+  _id: ID!
+  birthDate: String!
+  password: String!
+  phoneNumber: Int!
+  schools: [usersSchool]
+  username: String!
+}
+
+type usersSchool {
+  enrolledAt: String!
+  graduated: Boolean!
+  graduatedAt: String!
+  schoolId: String!
+}
+
+type rating {
+  _id: ID!
+  comment: String!
+  schoolId: String!
+  scores: scores!
+  userId: String!
+}
+
+type scores {
+  activetyOutsideOfSchool: Int!
+  food: Int!
+  location: Int!
+  reputation: Int!
+  sportHall: Int!
+  teachers: Int!
+}
+
+input ratingInput {
+  comment: String!
+  schoolId: String!
+  scores: scoresInput!
+  userId: String!
+}
+
+input scoresInput {
+  activetyOutsideOfSchool: Int!
+  food: Int!
+  location: Int!
+  reputation: Int!
+  sportHall: Int!
+  teachers: Int!
+}
+
+input schoolInfoInput {
+  isSchoolPrivate: Boolean!
+  location: String!
+  schoolName: String!
+  schoolType: SchoolType
+}
+
+input choosingSchoolInput {
+  enrolledAt: String!
+  graduated: Boolean!
+  graduatedAt: String
+  schoolId: String!
+  userId: String!
+}
+
+input editUserInput {
+  phoneNumber: Int!
+  userId: ID!
+  username: String!
+}
+
+input loginInput {
+  password: String!
+  phoneNumber: Int!
+}
+
+input userInput {
+  birthDate: String
+  password: String!
+  phoneNumber: Int!
+  username: String!
+}
