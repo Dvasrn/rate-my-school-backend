@@ -94,6 +94,16 @@ input schoolInfoInput {
   schoolType: SchoolType
 }
 
+input addSchoolPhotoInput {
+  photoBase64: String!
+  schoolId: ID!
+}
+
+input toggleFavoriteInput {
+  schoolId: ID!
+  userId: ID!
+}
+
 input choosingSchoolInput {
   enrolledAt: String!
   graduated: Boolean!
