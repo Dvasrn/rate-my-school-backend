@@ -100,6 +100,11 @@ input addSchoolPhotoInput {
   schoolId: ID!
 }
 
+input removeSchoolPhotoInput {
+  photoIndex: Int!
+  schoolId: ID!
+}
+
 input toggleFavoriteInput {
   schoolId: ID!
   userId: ID!
