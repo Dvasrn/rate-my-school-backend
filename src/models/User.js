@@ -13,7 +13,9 @@ const userSchoolSchema = new mongoose.Schema(
 
 const userSchema = new mongoose.Schema(
   {
-    _id: { type: String, default: () => randomUUID() },
+    // Mixed: хуучин баримтууд native ObjectId, шинээр үүсгэсэн нь string UUID
+    // тул хатуу String төрөл өгвөл findById хайлт зарим баримт дээр олдохгүй.
+    _id: { type: mongoose.Schema.Types.Mixed, default: () => randomUUID() },
     username: { type: String, required: true },
     phoneNumber: { type: Number, required: true, unique: true },
     password: { type: String, required: true },

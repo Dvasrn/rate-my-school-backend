@@ -4,6 +4,7 @@ import { User } from "./models/User.js";
 import { School } from "./models/School.js";
 import { Rating } from "./models/Rating.js";
 import { hashPassword, verifyPassword } from "./auth.js";
+import { idFilter } from "./ids.js";
 
 const notFound = (message) =>
   new GraphQLError(message, { extensions: { code: "NOT_FOUND" } });
@@ -29,7 +30,7 @@ export const resolvers = {
     },
     getOneUser: async (_parent, { id }) => {
       await connectDB();
-      const user = await User.findById(id).lean();
+      const user = await User.findOne(idFilter(id)).lean();
       if (!user) throw notFound("Хэрэглэгч олдсонгүй");
       return user;
     },
@@ -71,9 +72,9 @@ export const resolvers = {
 
     choosingSchool: async (_parent, { input }) => {
       await connectDB();
-      const user = await User.findById(input.userId);
+      const user = await User.findOne(idFilter(input.userId));
       if (!user) throw notFound("Хэрэглэгч олдсонгүй");
-      const school = await School.findById(input.schoolId).lean();
+      const school = await School.findOne(idFilter(input.schoolId)).lean();
       if (!school) throw notFound("Сургууль олдсонгүй");
       user.schools = user.schools ?? [];
       const alreadyChosen = user.schools.some(
@@ -132,7 +133,7 @@ export const resolvers = {
       if (input.photoBase64.length > MAX_PHOTO_BASE64_LENGTH) {
         throw new GraphQLError("Зургийн хэмжээ хэт том байна");
       }
-      const school = await School.findById(input.schoolId);
+      const school = await School.findOne(idFilter(input.schoolId));
       if (!school) throw notFound("Сургууль олдсонгүй");
       school.photos = school.photos ?? [];
       school.photos.push(input.photoBase64);
@@ -145,7 +146,7 @@ export const resolvers = {
 
     removeSchoolPhoto: async (_parent, { input }) => {
       await connectDB();
-      const school = await School.findById(input.schoolId);
+      const school = await School.findOne(idFilter(input.schoolId));
       if (!school) throw notFound("Сургууль олдсонгүй");
       school.photos = school.photos ?? [];
       if (input.photoIndex < 0 || input.photoIndex >= school.photos.length) {
@@ -158,9 +159,9 @@ export const resolvers = {
 
     toggleFavoriteSchool: async (_parent, { input }) => {
       await connectDB();
-      const user = await User.findById(input.userId);
+      const user = await User.findOne(idFilter(input.userId));
       if (!user) throw notFound("Хэрэглэгч олдсонгүй");
-      const schoolExists = await School.exists({ _id: input.schoolId });
+      const schoolExists = await School.exists(idFilter(input.schoolId));
       if (!schoolExists) throw notFound("Сургууль олдсонгүй");
       user.favoriteSchoolIds = user.favoriteSchoolIds ?? [];
       const index = user.favoriteSchoolIds.indexOf(input.schoolId);
@@ -175,7 +176,7 @@ export const resolvers = {
 
     deleteRating: async (_parent, { _id }) => {
       await connectDB();
-      const removed = await Rating.findByIdAndDelete(_id).lean();
+      const removed = await Rating.findOneAndDelete(idFilter(_id)).lean();
       if (!removed) throw notFound("Үнэлгээ олдсонгүй");
       return removed;
     },
@@ -195,10 +196,13 @@ export const resolvers = {
 
     editUser: async (_parent, { input }) => {
       await connectDB();
-      const user = await User.findById(input.userId);
+      const user = await User.findOne(idFilter(input.userId));
       if (!user) throw notFound("Хэрэглэгч олдсонгүй");
+      const excludedIds = mongoose.isValidObjectId(input.userId)
+        ? [input.userId, new mongoose.Types.ObjectId(input.userId)]
+        : [input.userId];
       const phoneTaken = await User.findOne({
-        _id: { $ne: input.userId },
+        _id: { $nin: excludedIds },
         phoneNumber: input.phoneNumber,
       });
       if (phoneTaken) {

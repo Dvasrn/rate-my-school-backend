@@ -15,7 +15,9 @@ const scoresSchema = new mongoose.Schema(
 
 const ratingSchema = new mongoose.Schema(
   {
-    _id: { type: String, default: () => randomUUID() },
+    // Mixed: хуучин баримтууд native ObjectId, шинээр үүсгэсэн нь string UUID
+    // тул хатуу String төрөл өгвөл findById хайлт зарим баримт дээр олдохгүй.
+    _id: { type: mongoose.Schema.Types.Mixed, default: () => randomUUID() },
     userId: { type: String, required: true },
     schoolId: { type: String, required: true },
     comment: { type: String, default: "" },
