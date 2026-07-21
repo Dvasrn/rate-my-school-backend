@@ -1,4 +1,5 @@
 import { GraphQLError } from "graphql";
+import mongoose from "mongoose";
 import { connectDB } from "./mongo.js";
 import { User } from "./models/User.js";
 import { School } from "./models/School.js";
