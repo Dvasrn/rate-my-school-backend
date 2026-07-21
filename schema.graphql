@@ -18,6 +18,7 @@ type Mutation {
   editRating(input: ratingInput!): rating!
   editUser(input: editUserInput!): user!
   login(input: loginInput!): user!
+  removeSchoolPhoto(input: removeSchoolPhotoInput!): School!
   signIn(input: userInput!): user!
   toggleFavoriteSchool(input: toggleFavoriteInput!): user!
 }
