@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     birthDate: { type: String, default: "" },
     schools: { type: [userSchoolSchema], default: [] },
+    favoriteSchoolIds: { type: [String], default: [] },
   },
   { versionKey: false }
 );
