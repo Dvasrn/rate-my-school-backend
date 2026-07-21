@@ -8,6 +8,11 @@ import { hashPassword, verifyPassword } from "./auth.js";
 const notFound = (message) =>
   new GraphQLError(message, { extensions: { code: "NOT_FOUND" } });
 
+// ~1.5MB тайлбарласан хэмжээ — MongoDB баримт бичгийн 16MB хязгаараас хол
+// байлгаж, олон зураг нэмэгдэхэд сан хэт хүнд болохоос сэргийлнэ.
+const MAX_PHOTO_BASE64_LENGTH = 2_000_000;
+const MAX_PHOTOS_PER_SCHOOL = 12;
+
 export const resolvers = {
   Query: {
     getAllRating: async () => {
