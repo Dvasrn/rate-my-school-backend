@@ -12,18 +12,21 @@ type Query {
 type Mutation {
   addRating(input: ratingInput!): rating!
   addSchool(input: schoolInfoInput!): School!
+  addSchoolPhoto(input: addSchoolPhotoInput!): School!
   choosingSchool(input: choosingSchoolInput!): user!
   deleteRating(_id: ID!): rating!
   editRating(input: ratingInput!): rating!
   editUser(input: editUserInput!): user!
   login(input: loginInput!): user!
   signIn(input: userInput!): user!
+  toggleFavoriteSchool(input: toggleFavoriteInput!): user!
 }
 
 type School {
   _id: ID!
   isSchoolPrivate: Boolean!
   location: String!
+  photos: [String!]!
   schoolName: String!
   schoolType: SchoolType!
 }
