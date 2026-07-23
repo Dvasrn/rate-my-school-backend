@@ -61,6 +61,14 @@ export const resolvers = {
       await connectDB();
       return TeacherRating.find({ teacherId }).lean();
     },
+    getQuestionsBySchool: async (_parent, { schoolId }) => {
+      await connectDB();
+      return Question.find({ schoolId }).sort({ createdAt: -1 }).lean();
+    },
+    getAnswersByQuestion: async (_parent, { questionId }) => {
+      await connectDB();
+      return Answer.find({ questionId }).sort({ createdAt: 1 }).lean();
+    },
   },
 
   Mutation: {
