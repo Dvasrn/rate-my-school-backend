@@ -186,3 +186,44 @@ input userInput {
   phoneNumber: Int!
   username: String!
 }
+
+type schoolQuestion {
+  _id: ID!
+  acceptedAnswerId: String
+  createdAt: String!
+  schoolId: String!
+  text: String!
+  userId: String!
+}
+
+type schoolAnswer {
+  _id: ID!
+  createdAt: String!
+  questionId: String!
+  text: String!
+  upvotedBy: [String!]!
+  userId: String!
+}
+
+input addQuestionInput {
+  schoolId: String!
+  text: String!
+  userId: String!
+}
+
+input addAnswerInput {
+  questionId: String!
+  text: String!
+  userId: String!
+}
+
+input toggleAnswerUpvoteInput {
+  answerId: ID!
+  userId: ID!
+}
+
+input acceptAnswerInput {
+  answerId: ID!
+  questionId: ID!
+  userId: ID!
+}
