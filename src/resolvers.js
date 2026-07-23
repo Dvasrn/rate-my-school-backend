@@ -6,6 +6,8 @@ import { School } from "./models/School.js";
 import { Rating } from "./models/Rating.js";
 import { Teacher } from "./models/Teacher.js";
 import { TeacherRating } from "./models/TeacherRating.js";
+import { Question } from "./models/Question.js";
+import { Answer } from "./models/Answer.js";
 import { hashPassword, verifyPassword } from "./auth.js";
 import { idFilter } from "./ids.js";
 
