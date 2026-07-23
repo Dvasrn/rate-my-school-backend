@@ -4,8 +4,11 @@ type Query {
   getAllRating: [rating!]!
   getAllSchool: [School!]!
   getAllUser: [user!]!
+  getOneTeacher(id: ID!): teacher!
   getOneUser(id: ID!): user!
   getSchoolsRating(schoolId: ID!): [rating!]!
+  getTeacherRatings(teacherId: ID!): [teacherRating!]!
+  getTeachersBySchool(schoolId: ID!): [teacher!]!
   getUserRating(id: ID!): [rating!]!
 }
 
@@ -13,6 +16,8 @@ type Mutation {
   addRating(input: ratingInput!): rating!
   addSchool(input: schoolInfoInput!): School!
   addSchoolPhoto(input: addSchoolPhotoInput!): School!
+  addTeacher(input: addTeacherInput!): teacher!
+  addTeacherRating(input: teacherRatingInput!): teacherRating!
   choosingSchool(input: choosingSchoolInput!): user!
   deleteRating(_id: ID!): rating!
   editRating(input: ratingInput!): rating!
