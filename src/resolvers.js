@@ -345,4 +345,8 @@ export const resolvers = {
   School: {
     photos: (parent) => parent.photos ?? [],
   },
+
+  schoolAnswer: {
+    upvotedBy: (parent) => parent.upvotedBy ?? [],
+  },
 };
