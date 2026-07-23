@@ -100,6 +100,46 @@ input schoolInfoInput {
   schoolType: SchoolType
 }
 
+type teacher {
+  _id: ID!
+  name: String!
+  schoolId: String!
+  subject: String!
+}
+
+type teacherRating {
+  _id: ID!
+  comment: String!
+  scores: teacherScores!
+  teacherId: String!
+  userId: String!
+}
+
+type teacherScores {
+  communication: Int!
+  examDifficulty: Int!
+  teachingMethod: Int!
+}
+
+input addTeacherInput {
+  name: String!
+  schoolId: String!
+  subject: String!
+}
+
+input teacherRatingInput {
+  comment: String!
+  scores: teacherScoresInput!
+  teacherId: String!
+  userId: String!
+}
+
+input teacherScoresInput {
+  communication: Int!
+  examDifficulty: Int!
+  teachingMethod: Int!
+}
+
 input addSchoolPhotoInput {
   photoBase64: String!
   schoolId: ID!
