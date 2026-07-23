@@ -131,6 +131,42 @@ export const resolvers = {
       return rating.toObject();
     },
 
+    addTeacher: async (_parent, { input }) => {
+      await connectDB();
+      const schoolExists = await School.exists(idFilter(input.schoolId));
+      if (!schoolExists) throw notFound("Сургууль олдсонгүй");
+      const teacher = await Teacher.create({
+        name: input.name,
+        schoolId: input.schoolId,
+        subject: input.subject,
+      });
+      return teacher.toObject();
+    },
+
+    // Нэг хэрэглэгч нэг багшид нэг л үнэлгээтэй — дахин илгээвэл хуучныг шинэчилнэ
+    addTeacherRating: async (_parent, { input }) => {
+      await connectDB();
+      const teacherExists = await Teacher.exists(idFilter(input.teacherId));
+      if (!teacherExists) throw notFound("Багш олдсонгүй");
+      const existing = await TeacherRating.findOne({
+        userId: input.userId,
+        teacherId: input.teacherId,
+      });
+      if (existing) {
+        existing.comment = input.comment;
+        existing.scores = { ...input.scores };
+        await existing.save();
+        return existing.toObject();
+      }
+      const rating = await TeacherRating.create({
+        userId: input.userId,
+        teacherId: input.teacherId,
+        comment: input.comment,
+        scores: { ...input.scores },
+      });
+      return rating.toObject();
+    },
+
     addSchool: async (_parent, { input }) => {
       await connectDB();
       const school = await School.create({
