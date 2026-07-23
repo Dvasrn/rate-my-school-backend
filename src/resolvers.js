@@ -177,6 +177,62 @@ export const resolvers = {
       return rating.toObject();
     },
 
+    addQuestion: async (_parent, { input }) => {
+      await connectDB();
+      const schoolExists = await School.exists(idFilter(input.schoolId));
+      if (!schoolExists) throw notFound("Сургууль олдсонгүй");
+      const question = await Question.create({
+        schoolId: input.schoolId,
+        userId: input.userId,
+        text: input.text,
+      });
+      return question.toObject();
+    },
+
+    addAnswer: async (_parent, { input }) => {
+      await connectDB();
+      const questionExists = await Question.exists(idFilter(input.questionId));
+      if (!questionExists) throw notFound("Асуулт олдсонгүй");
+      const answer = await Answer.create({
+        questionId: input.questionId,
+        userId: input.userId,
+        text: input.text,
+      });
+      return answer.toObject();
+    },
+
+    toggleAnswerUpvote: async (_parent, { input }) => {
+      await connectDB();
+      const answer = await Answer.findOne(idFilter(input.answerId));
+      if (!answer) throw notFound("Хариулт олдсонгүй");
+      answer.upvotedBy = answer.upvotedBy ?? [];
+      const index = answer.upvotedBy.indexOf(input.userId);
+      if (index === -1) {
+        answer.upvotedBy.push(input.userId);
+      } else {
+        answer.upvotedBy.splice(index, 1);
+      }
+      await answer.save();
+      return answer.toObject();
+    },
+
+    acceptAnswer: async (_parent, { input }) => {
+      await connectDB();
+      const question = await Question.findOne(idFilter(input.questionId));
+      if (!question) throw notFound("Асуулт олдсонгүй");
+      if (question.userId !== input.userId) {
+        throw new GraphQLError(
+          "Зөвхөн асуултыг асуусан хэрэглэгч хариултыг зөв гэж тэмдэглэх боломжтой"
+        );
+      }
+      const answerExists = await Answer.exists(idFilter(input.answerId));
+      if (!answerExists) throw notFound("Хариулт олдсонгүй");
+      question.acceptedAnswerId =
+        question.acceptedAnswerId === input.answerId ? null : input.answerId;
+      await question.save();
+      return question.toObject();
+    },
+
     addSchool: async (_parent, { input }) => {
       await connectDB();
       const school = await School.create({
