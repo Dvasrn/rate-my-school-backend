@@ -45,6 +45,20 @@ export const resolvers = {
       await connectDB();
       return Rating.find({ userId: id }).lean();
     },
+    getTeachersBySchool: async (_parent, { schoolId }) => {
+      await connectDB();
+      return Teacher.find({ schoolId }).lean();
+    },
+    getOneTeacher: async (_parent, { id }) => {
+      await connectDB();
+      const teacher = await Teacher.findOne(idFilter(id)).lean();
+      if (!teacher) throw notFound("Багш олдсонгүй");
+      return teacher;
+    },
+    getTeacherRatings: async (_parent, { teacherId }) => {
+      await connectDB();
+      return TeacherRating.find({ teacherId }).lean();
+    },
   },
 
   Mutation: {
