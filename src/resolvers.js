@@ -4,6 +4,8 @@ import { connectDB } from "./mongo.js";
 import { User } from "./models/User.js";
 import { School } from "./models/School.js";
 import { Rating } from "./models/Rating.js";
+import { Teacher } from "./models/Teacher.js";
+import { TeacherRating } from "./models/TeacherRating.js";
 import { hashPassword, verifyPassword } from "./auth.js";
 import { idFilter } from "./ids.js";
 
