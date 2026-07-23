@@ -4,8 +4,10 @@ type Query {
   getAllRating: [rating!]!
   getAllSchool: [School!]!
   getAllUser: [user!]!
+  getAnswersByQuestion(questionId: ID!): [schoolAnswer!]!
   getOneTeacher(id: ID!): teacher!
   getOneUser(id: ID!): user!
+  getQuestionsBySchool(schoolId: ID!): [schoolQuestion!]!
   getSchoolsRating(schoolId: ID!): [rating!]!
   getTeacherRatings(teacherId: ID!): [teacherRating!]!
   getTeachersBySchool(schoolId: ID!): [teacher!]!
@@ -13,6 +15,9 @@ type Query {
 }
 
 type Mutation {
+  acceptAnswer(input: acceptAnswerInput!): schoolQuestion!
+  addAnswer(input: addAnswerInput!): schoolAnswer!
+  addQuestion(input: addQuestionInput!): schoolQuestion!
   addRating(input: ratingInput!): rating!
   addSchool(input: schoolInfoInput!): School!
   addSchoolPhoto(input: addSchoolPhotoInput!): School!
@@ -25,6 +30,7 @@ type Mutation {
   login(input: loginInput!): user!
   removeSchoolPhoto(input: removeSchoolPhotoInput!): School!
   signIn(input: userInput!): user!
+  toggleAnswerUpvote(input: toggleAnswerUpvoteInput!): schoolAnswer!
   toggleFavoriteSchool(input: toggleFavoriteInput!): user!
 }
 
