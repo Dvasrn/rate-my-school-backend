@@ -15,6 +15,10 @@ const schoolSchema = new mongoose.Schema(
     },
     isSchoolPrivate: { type: Boolean, required: true },
     photos: { type: [String], default: [] },
+    semesterFee: { type: Number, default: 0 },
+    dormFee: { type: Number, default: 0 },
+    hasScholarship: { type: Boolean, default: false },
+    scholarshipInfo: { type: String, default: "" },
   },
   { versionKey: false }
 );
