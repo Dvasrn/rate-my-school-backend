@@ -359,6 +359,10 @@ export const resolvers = {
 
   School: {
     photos: (parent) => parent.photos ?? [],
+    semesterFee: (parent) => parent.semesterFee ?? 0,
+    dormFee: (parent) => parent.dormFee ?? 0,
+    hasScholarship: (parent) => parent.hasScholarship ?? false,
+    scholarshipInfo: (parent) => parent.scholarshipInfo ?? "",
   },
 
   schoolAnswer: {
