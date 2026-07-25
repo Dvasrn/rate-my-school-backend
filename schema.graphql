@@ -17,6 +17,7 @@ type Query {
 
 type Mutation {
   acceptAnswer(input: acceptAnswerInput!): schoolQuestion!
+  addAchievement(input: addAchievementInput!): achievement!
   addAnswer(input: addAnswerInput!): schoolAnswer!
   addQuestion(input: addQuestionInput!): schoolQuestion!
   addRating(input: ratingInput!): rating!
