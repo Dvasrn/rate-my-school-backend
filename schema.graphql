@@ -240,3 +240,35 @@ input acceptAnswerInput {
   questionId: ID!
   userId: ID!
 }
+
+enum AchievementCategory {
+  Hackathon
+  ICPC
+  NBAA
+  Olympiad
+}
+
+type achievement {
+  _id: ID!
+  category: AchievementCategory!
+  createdAt: String!
+  description: String!
+  schoolId: String!
+  title: String!
+  userId: String!
+  year: Int!
+}
+
+input addAchievementInput {
+  category: AchievementCategory!
+  description: String!
+  schoolId: String!
+  title: String!
+  userId: String!
+  year: Int!
+}
+
+input deleteAchievementInput {
+  achievementId: ID!
+  userId: ID!
+}
