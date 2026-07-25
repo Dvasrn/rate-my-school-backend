@@ -32,15 +32,28 @@ type Mutation {
   signIn(input: userInput!): user!
   toggleAnswerUpvote(input: toggleAnswerUpvoteInput!): schoolAnswer!
   toggleFavoriteSchool(input: toggleFavoriteInput!): user!
+  updateSchoolFees(input: updateSchoolFeesInput!): School!
 }
 
 type School {
   _id: ID!
+  dormFee: Int!
+  hasScholarship: Boolean!
   isSchoolPrivate: Boolean!
   location: String!
   photos: [String!]!
   schoolName: String!
   schoolType: SchoolType!
+  scholarshipInfo: String!
+  semesterFee: Int!
+}
+
+input updateSchoolFeesInput {
+  dormFee: Int!
+  hasScholarship: Boolean!
+  schoolId: ID!
+  scholarshipInfo: String!
+  semesterFee: Int!
 }
 
 enum SchoolType {
