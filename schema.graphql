@@ -85,6 +85,7 @@ type usersSchool {
 type rating {
   _id: ID!
   comment: String!
+  createdAt: String!
   schoolId: String!
   scores: scores!
   userId: String!
