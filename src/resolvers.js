@@ -244,6 +244,21 @@ export const resolvers = {
       return school.toObject();
     },
 
+    updateSchoolFees: async (_parent, { input }) => {
+      await connectDB();
+      if (input.semesterFee < 0 || input.dormFee < 0) {
+        throw new GraphQLError("Төлбөрийн дүн сөрөг байж болохгүй");
+      }
+      const school = await School.findOne(idFilter(input.schoolId));
+      if (!school) throw notFound("Сургууль олдсонгүй");
+      school.semesterFee = input.semesterFee;
+      school.dormFee = input.dormFee;
+      school.hasScholarship = input.hasScholarship;
+      school.scholarshipInfo = input.scholarshipInfo;
+      await school.save();
+      return school.toObject();
+    },
+
     addSchoolPhoto: async (_parent, { input }) => {
       await connectDB();
       if (!input.photoBase64 || input.photoBase64.length === 0) {
