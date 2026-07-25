@@ -238,6 +238,39 @@ export const resolvers = {
       return question.toObject();
     },
 
+    addAchievement: async (_parent, { input }) => {
+      await connectDB();
+      const schoolExists = await School.exists(idFilter(input.schoolId));
+      if (!schoolExists) throw notFound("Сургууль олдсонгүй");
+      if (input.year < 1900 || input.year > new Date().getFullYear() + 1) {
+        throw new GraphQLError("Оны утга буруу байна");
+      }
+      const achievement = await Achievement.create({
+        schoolId: input.schoolId,
+        userId: input.userId,
+        category: input.category,
+        title: input.title,
+        year: input.year,
+        description: input.description,
+      });
+      return achievement.toObject();
+    },
+
+    deleteAchievement: async (_parent, { input }) => {
+      await connectDB();
+      const achievement = await Achievement.findOne(
+        idFilter(input.achievementId)
+      );
+      if (!achievement) throw notFound("Амжилт олдсонгүй");
+      if (achievement.userId !== input.userId) {
+        throw new GraphQLError(
+          "Зөвхөн нэмсэн хэрэглэгч энэ амжилтыг устгах боломжтой"
+        );
+      }
+      await Achievement.deleteOne(idFilter(input.achievementId));
+      return achievement.toObject();
+    },
+
     addSchool: async (_parent, { input }) => {
       await connectDB();
       const school = await School.create({
