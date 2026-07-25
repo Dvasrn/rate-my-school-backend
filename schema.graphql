@@ -1,6 +1,7 @@
 scalar Date
 
 type Query {
+  getAchievementsBySchool(schoolId: ID!): [achievement!]!
   getAllRating: [rating!]!
   getAllSchool: [School!]!
   getAllUser: [user!]!
