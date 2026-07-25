@@ -70,6 +70,10 @@ export const resolvers = {
       await connectDB();
       return Answer.find({ questionId }).sort({ createdAt: 1 }).lean();
     },
+    getAchievementsBySchool: async (_parent, { schoolId }) => {
+      await connectDB();
+      return Achievement.find({ schoolId }).sort({ year: -1 }).lean();
+    },
   },
 
   Mutation: {
