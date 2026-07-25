@@ -395,6 +395,12 @@ export const resolvers = {
     favoriteSchoolIds: (parent) => parent.favoriteSchoolIds ?? [],
   },
 
+  rating: {
+    // Хуучин бичлэгүүдэд createdAt байхгүй тул "" буцаана — фронтенд үүнийг
+    // тренд тооцооноос хасаж, зөвхөн шинэ огноотой үнэлгээг ашиглана.
+    createdAt: (parent) => parent.createdAt ?? "",
+  },
+
   School: {
     photos: (parent) => parent.photos ?? [],
     semesterFee: (parent) => parent.semesterFee ?? 0,
