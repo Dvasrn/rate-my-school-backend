@@ -22,6 +22,7 @@ const ratingSchema = new mongoose.Schema(
     schoolId: { type: String, required: true },
     comment: { type: String, default: "" },
     scores: { type: scoresSchema, required: true },
+    createdAt: { type: String, default: () => new Date().toISOString() },
   },
   { versionKey: false }
 );
