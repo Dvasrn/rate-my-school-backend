@@ -8,6 +8,7 @@ import { Teacher } from "./models/Teacher.js";
 import { TeacherRating } from "./models/TeacherRating.js";
 import { Question } from "./models/Question.js";
 import { Answer } from "./models/Answer.js";
+import { Achievement } from "./models/Achievement.js";
 import { hashPassword, verifyPassword } from "./auth.js";
 import { idFilter } from "./ids.js";
 
