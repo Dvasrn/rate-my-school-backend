@@ -26,6 +26,7 @@ type Mutation {
   addTeacher(input: addTeacherInput!): teacher!
   addTeacherRating(input: teacherRatingInput!): teacherRating!
   choosingSchool(input: choosingSchoolInput!): user!
+  deleteAchievement(input: deleteAchievementInput!): achievement!
   deleteRating(_id: ID!): rating!
   editRating(input: ratingInput!): rating!
   editUser(input: editUserInput!): user!
