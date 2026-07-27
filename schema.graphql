@@ -33,10 +33,30 @@ type Mutation {
   login(input: loginInput!): user!
   removeSchoolPhoto(input: removeSchoolPhotoInput!): School!
   signIn(input: userInput!): user!
+  reportRating(input: reportRatingInput!): report!
   toggleAnswerUpvote(input: toggleAnswerUpvoteInput!): schoolAnswer!
   toggleFavoriteSchool(input: toggleFavoriteInput!): user!
   updateAdmissionInfo(input: updateAdmissionInfoInput!): School!
   updateSchoolFees(input: updateSchoolFeesInput!): School!
+}
+
+enum ReportReason {
+  Fake
+  Spam
+}
+
+type report {
+  _id: ID!
+  createdAt: String!
+  ratingId: String!
+  reason: ReportReason!
+  userId: String!
+}
+
+input reportRatingInput {
+  ratingId: String!
+  reason: ReportReason!
+  userId: String!
 }
 
 type School {
