@@ -9,6 +9,7 @@ import { TeacherRating } from "./models/TeacherRating.js";
 import { Question } from "./models/Question.js";
 import { Answer } from "./models/Answer.js";
 import { Achievement } from "./models/Achievement.js";
+import { Report } from "./models/Report.js";
 import { hashPassword, verifyPassword } from "./auth.js";
 import { idFilter } from "./ids.js";
 
