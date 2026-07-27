@@ -49,6 +49,10 @@ export const resolvers = {
       await connectDB();
       return Rating.find({ userId: id }).lean();
     },
+    getAllReports: async () => {
+      await connectDB();
+      return Report.find().sort({ createdAt: -1 }).lean();
+    },
     getTeachersBySchool: async (_parent, { schoolId }) => {
       await connectDB();
       return Teacher.find({ schoolId }).lean();
