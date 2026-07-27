@@ -263,6 +263,26 @@ export const resolvers = {
       return report.toObject();
     },
 
+    // Зөвхөн isAdmin=true хэрэглэгч мэдэгдлийг шийдвэрлэнэ: сэтгэгдлийг
+    // устгах (deleteRating=true) эсвэл үл хэрэгсэх (зөвхөн мэдэгдлийг арилгана)
+    resolveReport: async (_parent, { input }) => {
+      await connectDB();
+      const admin = await User.findOne(idFilter(input.adminUserId));
+      if (!admin || !admin.isAdmin) {
+        throw new GraphQLError(
+          "Зөвхөн админ эрхтэй хэрэглэгч энэ үйлдлийг хийх боломжтой"
+        );
+      }
+      const report = await Report.findOne(idFilter(input.reportId));
+      if (!report) throw notFound("Мэдэгдэл олдсонгүй");
+      if (input.deleteRating) {
+        await Rating.deleteOne(idFilter(report.ratingId));
+      }
+      const reportCopy = report.toObject();
+      await Report.deleteOne(idFilter(input.reportId));
+      return reportCopy;
+    },
+
     addAchievement: async (_parent, { input }) => {
       await connectDB();
       const schoolExists = await School.exists(idFilter(input.schoolId));
