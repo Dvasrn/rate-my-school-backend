@@ -93,6 +93,7 @@ type rating {
 
 type scores {
   activetyOutsideOfSchool: Int!
+  dorm: Int!
   food: Int!
   location: Int!
   reputation: Int!
@@ -109,6 +110,7 @@ input ratingInput {
 
 input scoresInput {
   activetyOutsideOfSchool: Int!
+  dorm: Int!
   food: Int!
   location: Int!
   reputation: Int!

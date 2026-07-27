@@ -9,6 +9,7 @@ const scoresSchema = new mongoose.Schema(
     teachers: { type: Number, required: true },
     sportHall: { type: Number, required: true },
     activetyOutsideOfSchool: { type: Number, required: true },
+    dorm: { type: Number, required: true },
   },
   { _id: false }
 );

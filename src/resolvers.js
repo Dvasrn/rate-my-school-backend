@@ -401,6 +401,12 @@ export const resolvers = {
     createdAt: (parent) => parent.createdAt ?? "",
   },
 
+  scores: {
+    // "Дотуур байр" ангилал хожим нэмэгдсэн тул хуучин үнэлгээнүүдэд
+    // dorm талбар байхгүй — 0 буцааж, тренд/дундаж тооцоог эвдэхгүй.
+    dorm: (parent) => parent.dorm ?? 0,
+  },
+
   School: {
     photos: (parent) => parent.photos ?? [],
     semesterFee: (parent) => parent.semesterFee ?? 0,
