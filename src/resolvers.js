@@ -239,6 +239,26 @@ export const resolvers = {
       return question.toObject();
     },
 
+    // Нэг хэрэглэгч нэг сэтгэгдлийг давхар мэдэгдэхгүй — өмнөх мэдэгдлийг буцаана
+    reportRating: async (_parent, { input }) => {
+      await connectDB();
+      const ratingExists = await Rating.exists(idFilter(input.ratingId));
+      if (!ratingExists) throw notFound("Сэтгэгдэл олдсонгүй");
+      const existing = await Report.findOne({
+        ratingId: input.ratingId,
+        userId: input.userId,
+      });
+      if (existing) {
+        return existing.toObject();
+      }
+      const report = await Report.create({
+        ratingId: input.ratingId,
+        userId: input.userId,
+        reason: input.reason,
+      });
+      return report.toObject();
+    },
+
     addAchievement: async (_parent, { input }) => {
       await connectDB();
       const schoolExists = await School.exists(idFilter(input.schoolId));
