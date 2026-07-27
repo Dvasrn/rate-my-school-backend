@@ -244,23 +244,6 @@ export const resolvers = {
     },
 
     // Нэг хэрэглэгч нэг сэтгэгдлийг давхар мэдэгдэхгүй — өмнөх мэдэгдлийг буцаана
-    // ВРЕМЕННО: анхны админыг тохируулах зориулалттай, ADMIN_BOOTSTRAP_SECRET
-    // тохирсоны дараа ашигласан бөгөөд устгагдах ёстой.
-    bootstrapAdmin: async (_parent, { input }) => {
-      await connectDB();
-      if (
-        !process.env.ADMIN_BOOTSTRAP_SECRET ||
-        input.secret !== process.env.ADMIN_BOOTSTRAP_SECRET
-      ) {
-        throw new GraphQLError("Буруу secret");
-      }
-      const user = await User.findOne(idFilter(input.userId));
-      if (!user) throw notFound("Хэрэглэгч олдсонгүй");
-      user.isAdmin = true;
-      await user.save();
-      return user.toObject();
-    },
-
     reportRating: async (_parent, { input }) => {
       await connectDB();
       const ratingExists = await Rating.exists(idFilter(input.ratingId));

@@ -18,7 +18,6 @@ type Query {
 
 type Mutation {
   acceptAnswer(input: acceptAnswerInput!): schoolQuestion!
-  bootstrapAdmin(input: bootstrapAdminInput!): user!
   addAchievement(input: addAchievementInput!): achievement!
   addAnswer(input: addAnswerInput!): schoolAnswer!
   addQuestion(input: addQuestionInput!): schoolQuestion!
@@ -41,11 +40,6 @@ type Mutation {
   toggleFavoriteSchool(input: toggleFavoriteInput!): user!
   updateAdmissionInfo(input: updateAdmissionInfoInput!): School!
   updateSchoolFees(input: updateSchoolFeesInput!): School!
-}
-
-input bootstrapAdminInput {
-  secret: String!
-  userId: ID!
 }
 
 input resolveReportInput {
