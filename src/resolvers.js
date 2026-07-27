@@ -297,6 +297,18 @@ export const resolvers = {
       return school.toObject();
     },
 
+    updateAdmissionInfo: async (_parent, { input }) => {
+      await connectDB();
+      const school = await School.findOne(idFilter(input.schoolId));
+      if (!school) throw notFound("Сургууль олдсонгүй");
+      school.admissionThreshold = input.admissionThreshold;
+      school.admissionExam = input.admissionExam;
+      school.admissionMaterials = input.admissionMaterials;
+      school.admissionDeadline = input.admissionDeadline;
+      await school.save();
+      return school.toObject();
+    },
+
     addSchoolPhoto: async (_parent, { input }) => {
       await connectDB();
       if (!input.photoBase64 || input.photoBase64.length === 0) {
