@@ -19,6 +19,10 @@ const schoolSchema = new mongoose.Schema(
     dormFee: { type: Number, default: 0 },
     hasScholarship: { type: Boolean, default: false },
     scholarshipInfo: { type: String, default: "" },
+    admissionThreshold: { type: String, default: "" },
+    admissionExam: { type: String, default: "" },
+    admissionMaterials: { type: String, default: "" },
+    admissionDeadline: { type: String, default: "" },
   },
   { versionKey: false }
 );
