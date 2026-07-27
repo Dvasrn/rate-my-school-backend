@@ -35,10 +35,17 @@ type Mutation {
   removeSchoolPhoto(input: removeSchoolPhotoInput!): School!
   signIn(input: userInput!): user!
   reportRating(input: reportRatingInput!): report!
+  resolveReport(input: resolveReportInput!): report!
   toggleAnswerUpvote(input: toggleAnswerUpvoteInput!): schoolAnswer!
   toggleFavoriteSchool(input: toggleFavoriteInput!): user!
   updateAdmissionInfo(input: updateAdmissionInfoInput!): School!
   updateSchoolFees(input: updateSchoolFeesInput!): School!
+}
+
+input resolveReportInput {
+  adminUserId: ID!
+  deleteRating: Boolean!
+  reportId: ID!
 }
 
 enum ReportReason {
@@ -103,6 +110,7 @@ type user {
   _id: ID!
   birthDate: String!
   favoriteSchoolIds: [String!]!
+  isAdmin: Boolean!
   password: String!
   phoneNumber: Int!
   schools: [usersSchool]
