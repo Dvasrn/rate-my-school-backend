@@ -22,6 +22,7 @@ const userSchema = new mongoose.Schema(
     birthDate: { type: String, default: "" },
     schools: { type: [userSchoolSchema], default: [] },
     favoriteSchoolIds: { type: [String], default: [] },
+    isAdmin: { type: Boolean, default: false },
   },
   { versionKey: false }
 );
