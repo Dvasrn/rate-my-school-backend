@@ -43,6 +43,11 @@ type Mutation {
   updateSchoolFees(input: updateSchoolFeesInput!): School!
 }
 
+input bootstrapAdminInput {
+  secret: String!
+  userId: ID!
+}
+
 input resolveReportInput {
   adminUserId: ID!
   deleteRating: Boolean!
