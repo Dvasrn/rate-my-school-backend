@@ -18,6 +18,7 @@ type Query {
 
 type Mutation {
   acceptAnswer(input: acceptAnswerInput!): schoolQuestion!
+  bootstrapAdmin(input: bootstrapAdminInput!): user!
   addAchievement(input: addAchievementInput!): achievement!
   addAnswer(input: addAnswerInput!): schoolAnswer!
   addQuestion(input: addQuestionInput!): schoolQuestion!
