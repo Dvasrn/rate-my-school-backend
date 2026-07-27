@@ -3,6 +3,7 @@ scalar Date
 type Query {
   getAchievementsBySchool(schoolId: ID!): [achievement!]!
   getAllRating: [rating!]!
+  getAllReports: [report!]!
   getAllSchool: [School!]!
   getAllUser: [user!]!
   getAnswersByQuestion(questionId: ID!): [schoolAnswer!]!
