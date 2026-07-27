@@ -450,6 +450,7 @@ export const resolvers = {
     schools: (parent) => parent.schools ?? [],
     birthDate: (parent) => parent.birthDate ?? "",
     favoriteSchoolIds: (parent) => parent.favoriteSchoolIds ?? [],
+    isAdmin: (parent) => parent.isAdmin ?? false,
   },
 
   rating: {
