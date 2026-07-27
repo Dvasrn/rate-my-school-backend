@@ -425,6 +425,10 @@ export const resolvers = {
     dormFee: (parent) => parent.dormFee ?? 0,
     hasScholarship: (parent) => parent.hasScholarship ?? false,
     scholarshipInfo: (parent) => parent.scholarshipInfo ?? "",
+    admissionThreshold: (parent) => parent.admissionThreshold ?? "",
+    admissionExam: (parent) => parent.admissionExam ?? "",
+    admissionMaterials: (parent) => parent.admissionMaterials ?? "",
+    admissionDeadline: (parent) => parent.admissionDeadline ?? "",
   },
 
   schoolAnswer: {
