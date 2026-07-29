@@ -94,6 +94,15 @@ input updateSchoolFeesInput {
   semesterFee: Int!
 }
 
+input updateSchoolInfoInput {
+  adminUserId: ID!
+  isSchoolPrivate: Boolean!
+  location: String!
+  schoolId: ID!
+  schoolName: String!
+  schoolType: SchoolType!
+}
+
 input updateAdmissionInfoInput {
   admissionDeadline: String!
   admissionExam: String!
@@ -236,6 +245,11 @@ input editUserInput {
   phoneNumber: Int!
   userId: ID!
   username: String!
+}
+
+input deleteUserInput {
+  adminUserId: ID!
+  userId: ID!
 }
 
 input loginInput {
