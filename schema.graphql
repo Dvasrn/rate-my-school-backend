@@ -29,6 +29,7 @@ type Mutation {
   choosingSchool(input: choosingSchoolInput!): user!
   deleteAchievement(input: deleteAchievementInput!): achievement!
   deleteRating(_id: ID!): rating!
+  deleteUser(input: deleteUserInput!): user!
   editRating(input: ratingInput!): rating!
   editUser(input: editUserInput!): user!
   login(input: loginInput!): user!
@@ -40,6 +41,7 @@ type Mutation {
   toggleFavoriteSchool(input: toggleFavoriteInput!): user!
   updateAdmissionInfo(input: updateAdmissionInfoInput!): School!
   updateSchoolFees(input: updateSchoolFeesInput!): School!
+  updateSchoolInfo(input: updateSchoolInfoInput!): School!
 }
 
 input resolveReportInput {
