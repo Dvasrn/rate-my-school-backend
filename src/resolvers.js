@@ -439,6 +439,33 @@ export const resolvers = {
       return removed;
     },
 
+    // Хэрэглэгчийг устгахад түүний үлдээсэн үнэлгээ, мэдэгдлийг цуг арилгана —
+    // эс тэгвэл өнчин баримт үлдэж, сургуулийн дундаж оноо буруу тооцогдоно.
+    deleteUser: async (_parent, { input }) => {
+      await connectDB();
+      await requireAdmin(input.adminUserId);
+      const user = await User.findOne(idFilter(input.userId));
+      if (!user) throw notFound("Хэрэглэгч олдсонгүй");
+
+      const userId = String(user._id);
+      if (userId === String(input.adminUserId)) {
+        throw new GraphQLError("Өөрийн бүртгэлийг устгах боломжгүй");
+      }
+
+      const ratings = await Rating.find({ userId }).select("_id").lean();
+      const ratingIds = ratings.map((rating) => String(rating._id));
+      // Түүний илгээсэн болон түүний үнэлгээ рүү чиглэсэн мэдэгдэл хоёулаа устана.
+      await Report.deleteMany({
+        $or: [{ userId }, { ratingId: { $in: ratingIds } }],
+      });
+      await Rating.deleteMany({ userId });
+      await TeacherRating.deleteMany({ userId });
+
+      const removed = user.toObject();
+      await User.deleteOne(idFilter(userId));
+      return removed;
+    },
+
     editRating: async (_parent, { input }) => {
       await connectDB();
       const rating = await Rating.findOne({
