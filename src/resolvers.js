@@ -439,7 +439,7 @@ export const resolvers = {
       return removed;
     },
 
-    // Хэрэглэгчийг устгахад түүний үлдээсэн үнэлгээ, мэдэгдлийг цуг арилгана —
+    // Хэрэглэгчийг устгахад түүний үлдээсэн бүх контентыг цуг арилгана —
     // эс тэгвэл өнчин баримт үлдэж, сургуулийн дундаж оноо буруу тооцогдоно.
     deleteUser: async (_parent, { input }) => {
       await connectDB();
@@ -460,6 +460,30 @@ export const resolvers = {
       });
       await Rating.deleteMany({ userId });
       await TeacherRating.deleteMany({ userId });
+
+      // Асуулт устахад түүнд ирсэн бусдын хариулт өнчирдөг тул хамт устгана.
+      const questions = await Question.find({ userId }).select("_id").lean();
+      const questionIds = questions.map((question) => String(question._id));
+      const answers = await Answer.find({
+        $or: [{ userId }, { questionId: { $in: questionIds } }],
+      })
+        .select("_id")
+        .lean();
+      const answerIds = answers.map((answer) => String(answer._id));
+
+      await Answer.deleteMany({ _id: { $in: answers.map((a) => a._id) } });
+      await Question.deleteMany({ userId });
+      await Achievement.deleteMany({ userId });
+      // Үлдсэн асуултууд устсан хариулт руу заасаар байвал цэвэрлэнэ.
+      await Question.updateMany(
+        { acceptedAnswerId: { $in: answerIds } },
+        { $set: { acceptedAnswerId: null } }
+      );
+      // Бусдын хариулт дээр өгсөн түүний саналыг хасна.
+      await Answer.updateMany(
+        { upvotedBy: userId },
+        { $pull: { upvotedBy: userId } }
+      );
 
       const removed = user.toObject();
       await User.deleteOne(idFilter(userId));
