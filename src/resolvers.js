@@ -333,6 +333,29 @@ export const resolvers = {
       return school.toObject();
     },
 
+    // Сургуулийн үндсэн мэдээллийг зөвхөн админ засна — нэр, байршил нь
+    // бүх үнэлгээний тулгуур мэдээлэл тул санамсаргүй өөрчлөгдөх ёсгүй.
+    updateSchoolInfo: async (_parent, { input }) => {
+      await connectDB();
+      await requireAdmin(input.adminUserId);
+      const schoolName = input.schoolName.trim();
+      const location = input.location.trim();
+      if (!schoolName) {
+        throw new GraphQLError("Сургуулийн нэр хоосон байж болохгүй");
+      }
+      if (!location) {
+        throw new GraphQLError("Байршил хоосон байж болохгүй");
+      }
+      const school = await School.findOne(idFilter(input.schoolId));
+      if (!school) throw notFound("Сургууль олдсонгүй");
+      school.schoolName = schoolName;
+      school.location = location;
+      school.schoolType = input.schoolType;
+      school.isSchoolPrivate = input.isSchoolPrivate;
+      await school.save();
+      return school.toObject();
+    },
+
     updateSchoolFees: async (_parent, { input }) => {
       await connectDB();
       if (input.semesterFee < 0 || input.dormFee < 0) {
