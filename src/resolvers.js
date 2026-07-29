@@ -16,6 +16,17 @@ import { idFilter } from "./ids.js";
 const notFound = (message) =>
   new GraphQLError(message, { extensions: { code: "NOT_FOUND" } });
 
+// Админ эрх шаардсан үйлдлүүд адилхан шалгалт хийдэг тул нэг газраас хийнэ.
+const requireAdmin = async (adminUserId) => {
+  const admin = await User.findOne(idFilter(adminUserId));
+  if (!admin || !admin.isAdmin) {
+    throw new GraphQLError(
+      "Зөвхөн админ эрхтэй хэрэглэгч энэ үйлдлийг хийх боломжтой"
+    );
+  }
+  return admin;
+};
+
 // ~1.5MB тайлбарласан хэмжээ — MongoDB баримт бичгийн 16MB хязгаараас хол
 // байлгаж, олон зураг нэмэгдэхэд сан хэт хүнд болохоос сэргийлнэ.
 const MAX_PHOTO_BASE64_LENGTH = 2_000_000;
