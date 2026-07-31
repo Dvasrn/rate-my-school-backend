@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "seed:schools": "node seed-schools.js"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
