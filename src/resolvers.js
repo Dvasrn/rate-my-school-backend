@@ -322,15 +322,77 @@ export const resolvers = {
       return achievement.toObject();
     },
 
+    // Сургууль нэмэх нь бүх үнэлгээний тулгуур бичлэг үүсгэдэг тул зөвхөн админ.
     addSchool: async (_parent, { input }) => {
       await connectDB();
+      await requireAdmin(input.adminUserId);
+
+      const schoolName = input.schoolName.trim();
+      const location = input.location.trim();
+      if (!schoolName) {
+        throw new GraphQLError("Сургуулийн нэр хоосон байж болохгүй");
+      }
+      if (!location) {
+        throw new GraphQLError("Байршил хоосон байж болохгүй");
+      }
+
+      // Ижил нэртэй сургууль давхардвал үнэлгээ хоёр тийш хуваагдана.
+      const duplicate = await School.findOne({ schoolName });
+      if (duplicate) {
+        throw new GraphQLError("Ийм нэртэй сургууль аль хэдийн бүртгэлтэй байна");
+      }
+
       const school = await School.create({
-        schoolName: input.schoolName,
-        location: input.location,
+        schoolName,
+        location,
         schoolType: input.schoolType ?? "HighSchool",
         isSchoolPrivate: input.isSchoolPrivate,
       });
       return school.toObject();
+    },
+
+    // Сургууль устгахад түүн рүү заасан бүх бичлэг эзэнгүй үлддэг тул
+    // үнэлгээ, асуулт, багш, амжилтыг цуг цэвэрлэнэ.
+    deleteSchool: async (_parent, { input }) => {
+      await connectDB();
+      await requireAdmin(input.adminUserId);
+
+      const school = await School.findOne(idFilter(input.schoolId));
+      if (!school) throw notFound("Сургууль олдсонгүй");
+      const schoolId = String(school._id);
+
+      const ratings = await Rating.find({ schoolId }).select("_id").lean();
+      const ratingIds = ratings.map((rating) => String(rating._id));
+      await Report.deleteMany({ ratingId: { $in: ratingIds } });
+      await Rating.deleteMany({ schoolId });
+
+      // Багш устахад түүнд өгсөн үнэлгээ өнчирдөг тул хамт устгана.
+      const teachers = await Teacher.find({ schoolId }).select("_id").lean();
+      const teacherIds = teachers.map((teacher) => String(teacher._id));
+      await TeacherRating.deleteMany({ teacherId: { $in: teacherIds } });
+      await Teacher.deleteMany({ schoolId });
+
+      // Асуулт устахад түүнд ирсэн хариултууд ч мөн адил.
+      const questions = await Question.find({ schoolId }).select("_id").lean();
+      const questionIds = questions.map((question) => String(question._id));
+      await Answer.deleteMany({ questionId: { $in: questionIds } });
+      await Question.deleteMany({ schoolId });
+
+      await Achievement.deleteMany({ schoolId });
+
+      // Хэрэглэгчийн дуртай жагсаалт болон бүртгүүлсэн сургуулиас хасна.
+      await User.updateMany(
+        { favoriteSchoolIds: schoolId },
+        { $pull: { favoriteSchoolIds: schoolId } }
+      );
+      await User.updateMany(
+        { "schools.schoolId": schoolId },
+        { $pull: { schools: { schoolId } } }
+      );
+
+      const removed = school.toObject();
+      await School.deleteOne(idFilter(schoolId));
+      return removed;
     },
 
     // Сургуулийн үндсэн мэдээллийг зөвхөн админ засна — нэр, байршил нь

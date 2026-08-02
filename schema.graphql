@@ -29,6 +29,7 @@ type Mutation {
   choosingSchool(input: choosingSchoolInput!): user!
   deleteAchievement(input: deleteAchievementInput!): achievement!
   deleteRating(_id: ID!): rating!
+  deleteSchool(input: deleteSchoolInput!): School!
   deleteUser(input: deleteUserInput!): user!
   editRating(input: ratingInput!): rating!
   editUser(input: editUserInput!): user!
@@ -117,12 +118,13 @@ enum SchoolType {
   University
 }
 
+# Нууц үгийн hash-ийг клиент рүү огт гаргахгүй — login/signIn нь input-аар
+# хүлээж авдаг тул унших талбар шаардлагагүй.
 type user {
   _id: ID!
   birthDate: String!
   favoriteSchoolIds: [String!]!
   isAdmin: Boolean!
-  password: String!
   phoneNumber: Int!
   schools: [usersSchool]
   username: String!
@@ -172,6 +174,7 @@ input scoresInput {
 }
 
 input schoolInfoInput {
+  adminUserId: ID!
   isSchoolPrivate: Boolean!
   location: String!
   schoolName: String!
@@ -245,6 +248,11 @@ input editUserInput {
   phoneNumber: Int!
   userId: ID!
   username: String!
+}
+
+input deleteSchoolInput {
+  adminUserId: ID!
+  schoolId: ID!
 }
 
 input deleteUserInput {
