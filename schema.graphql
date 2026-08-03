@@ -46,7 +46,8 @@ type Mutation {
 }
 
 input resolveReportInput {
-  adminUserId: ID!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  adminUserId: ID
   deleteRating: Boolean!
   reportId: ID!
 }
@@ -67,7 +68,8 @@ type report {
 input reportRatingInput {
   ratingId: String!
   reason: ReportReason!
-  userId: String!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  userId: String
 }
 
 type School {
@@ -96,7 +98,8 @@ input updateSchoolFeesInput {
 }
 
 input updateSchoolInfoInput {
-  adminUserId: ID!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  adminUserId: ID
   isSchoolPrivate: Boolean!
   location: String!
   schoolId: ID!
@@ -163,7 +166,8 @@ input ratingInput {
   comment: String!
   schoolId: String!
   scores: scoresInput!
-  userId: String!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  userId: String
 }
 
 input scoresInput {
@@ -177,7 +181,8 @@ input scoresInput {
 }
 
 input schoolInfoInput {
-  adminUserId: ID!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  adminUserId: ID
   isSchoolPrivate: Boolean!
   location: String!
   schoolName: String!
@@ -215,7 +220,8 @@ input teacherRatingInput {
   comment: String!
   scores: teacherScoresInput!
   teacherId: String!
-  userId: String!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  userId: String
 }
 
 input teacherScoresInput {
@@ -236,7 +242,8 @@ input removeSchoolPhotoInput {
 
 input toggleFavoriteInput {
   schoolId: ID!
-  userId: ID!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  userId: ID
 }
 
 input choosingSchoolInput {
@@ -244,22 +251,26 @@ input choosingSchoolInput {
   graduated: Boolean!
   graduatedAt: String
   schoolId: String!
-  userId: String!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  userId: String
 }
 
 input editUserInput {
   phoneNumber: Int!
-  userId: ID!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  userId: ID
   username: String!
 }
 
 input deleteSchoolInput {
-  adminUserId: ID!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  adminUserId: ID
   schoolId: ID!
 }
 
 input deleteUserInput {
-  adminUserId: ID!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  adminUserId: ID
   userId: ID!
 }
 
@@ -296,24 +307,28 @@ type schoolAnswer {
 input addQuestionInput {
   schoolId: String!
   text: String!
-  userId: String!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  userId: String
 }
 
 input addAnswerInput {
   questionId: String!
   text: String!
-  userId: String!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  userId: String
 }
 
 input toggleAnswerUpvoteInput {
   answerId: ID!
-  userId: ID!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  userId: ID
 }
 
 input acceptAnswerInput {
   answerId: ID!
   questionId: ID!
-  userId: ID!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  userId: ID
 }
 
 enum AchievementCategory {
@@ -339,11 +354,13 @@ input addAchievementInput {
   description: String!
   schoolId: String!
   title: String!
-  userId: String!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  userId: String
   year: Int!
 }
 
 input deleteAchievementInput {
   achievementId: ID!
-  userId: ID!
+  # Серверээс үл хэрэгсэнэ — хэн үйлдэл хийж байгааг токеноос тодорхойлно.
+  userId: ID
 }
