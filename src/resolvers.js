@@ -12,19 +12,34 @@ import { Achievement } from "./models/Achievement.js";
 import { Report } from "./models/Report.js";
 import { hashPassword, verifyPassword } from "./auth.js";
 import { idFilter } from "./ids.js";
+import { createToken } from "./token.js";
 
 const notFound = (message) =>
   new GraphQLError(message, { extensions: { code: "NOT_FOUND" } });
 
-// Админ эрх шаардсан үйлдлүүд адилхан шалгалт хийдэг тул нэг газраас хийнэ.
-const requireAdmin = async (adminUserId) => {
-  const admin = await User.findOne(idFilter(adminUserId));
-  if (!admin || !admin.isAdmin) {
+// Хэн үйлдэл хийж байгааг ЗӨВХӨН токеноос тодорхойлно. Өмнө нь клиентээс
+// ирсэн userId-д итгэдэг байсан тул хэн ч бусдын нэрийн өмнөөс үйлдэл хийх,
+// нийтэд нээлттэй жагсаалтаас олсон админы ID-гаар админ эрх авах боломжтой
+// байсан.
+const requireViewer = (context) => {
+  const viewer = context?.viewer;
+  if (!viewer) {
+    throw new GraphQLError("Нэвтэрч орно уу", {
+      extensions: { code: "UNAUTHENTICATED" },
+    });
+  }
+  return viewer;
+};
+
+const requireAdmin = (context) => {
+  const viewer = requireViewer(context);
+  if (!viewer.isAdmin) {
     throw new GraphQLError(
-      "Зөвхөн админ эрхтэй хэрэглэгч энэ үйлдлийг хийх боломжтой"
+      "Зөвхөн админ эрхтэй хэрэглэгч энэ үйлдлийг хийх боломжтой",
+      { extensions: { code: "FORBIDDEN" } }
     );
   }
-  return admin;
+  return viewer;
 };
 
 // ~1.5MB тайлбарласан хэмжээ — MongoDB баримт бичгийн 16MB хязгаараас хол
@@ -42,8 +57,10 @@ export const resolvers = {
       await connectDB();
       return School.find().lean();
     },
-    getAllUser: async () => {
+    // Утасны дугаар зэрэг хувийн мэдээлэл агуулдаг тул зөвхөн админ.
+    getAllUser: async (_parent, _args, context) => {
       await connectDB();
+      requireAdmin(context);
       return User.find().lean();
     },
     getOneUser: async (_parent, { id }) => {
@@ -106,7 +123,7 @@ export const resolvers = {
         birthDate: input.birthDate ?? "",
         schools: [],
       });
-      return user.toObject();
+      return { ...user.toObject(), token: createToken(user._id) };
     },
 
     login: async (_parent, { input }) => {
@@ -115,12 +132,13 @@ export const resolvers = {
       if (!user || !verifyPassword(input.password, user.password)) {
         throw new GraphQLError("Утасны дугаар эсвэл нууц үг буруу байна");
       }
-      return user.toObject();
+      return { ...user.toObject(), token: createToken(user._id) };
     },
 
-    choosingSchool: async (_parent, { input }) => {
+    choosingSchool: async (_parent, { input }, context) => {
       await connectDB();
-      const user = await User.findOne(idFilter(input.userId));
+      const viewer = requireViewer(context);
+      const user = await User.findOne(idFilter(viewer._id));
       if (!user) throw notFound("Хэрэглэгч олдсонгүй");
       const school = await School.findOne(idFilter(input.schoolId)).lean();
       if (!school) throw notFound("Сургууль олдсонгүй");
@@ -141,10 +159,11 @@ export const resolvers = {
     },
 
     // Нэг хэрэглэгч нэг сургуульд нэг л үнэлгээтэй — дахин илгээвэл хуучныг шинэчилнэ
-    addRating: async (_parent, { input }) => {
+    addRating: async (_parent, { input }, context) => {
       await connectDB();
+      const viewer = requireViewer(context);
       const existing = await Rating.findOne({
-        userId: input.userId,
+        userId: viewer._id,
         schoolId: input.schoolId,
       });
       if (existing) {
@@ -154,7 +173,7 @@ export const resolvers = {
         return existing.toObject();
       }
       const rating = await Rating.create({
-        userId: input.userId,
+        userId: viewer._id,
         schoolId: input.schoolId,
         comment: input.comment,
         scores: { ...input.scores },
@@ -162,8 +181,9 @@ export const resolvers = {
       return rating.toObject();
     },
 
-    addTeacher: async (_parent, { input }) => {
+    addTeacher: async (_parent, { input }, context) => {
       await connectDB();
+      requireViewer(context);
       const schoolExists = await School.exists(idFilter(input.schoolId));
       if (!schoolExists) throw notFound("Сургууль олдсонгүй");
       const teacher = await Teacher.create({
@@ -175,12 +195,13 @@ export const resolvers = {
     },
 
     // Нэг хэрэглэгч нэг багшид нэг л үнэлгээтэй — дахин илгээвэл хуучныг шинэчилнэ
-    addTeacherRating: async (_parent, { input }) => {
+    addTeacherRating: async (_parent, { input }, context) => {
       await connectDB();
+      const viewer = requireViewer(context);
       const teacherExists = await Teacher.exists(idFilter(input.teacherId));
       if (!teacherExists) throw notFound("Багш олдсонгүй");
       const existing = await TeacherRating.findOne({
-        userId: input.userId,
+        userId: viewer._id,
         teacherId: input.teacherId,
       });
       if (existing) {
@@ -190,7 +211,7 @@ export const resolvers = {
         return existing.toObject();
       }
       const rating = await TeacherRating.create({
-        userId: input.userId,
+        userId: viewer._id,
         teacherId: input.teacherId,
         comment: input.comment,
         scores: { ...input.scores },
@@ -198,38 +219,41 @@ export const resolvers = {
       return rating.toObject();
     },
 
-    addQuestion: async (_parent, { input }) => {
+    addQuestion: async (_parent, { input }, context) => {
       await connectDB();
+      const viewer = requireViewer(context);
       const schoolExists = await School.exists(idFilter(input.schoolId));
       if (!schoolExists) throw notFound("Сургууль олдсонгүй");
       const question = await Question.create({
         schoolId: input.schoolId,
-        userId: input.userId,
+        userId: viewer._id,
         text: input.text,
       });
       return question.toObject();
     },
 
-    addAnswer: async (_parent, { input }) => {
+    addAnswer: async (_parent, { input }, context) => {
       await connectDB();
+      const viewer = requireViewer(context);
       const questionExists = await Question.exists(idFilter(input.questionId));
       if (!questionExists) throw notFound("Асуулт олдсонгүй");
       const answer = await Answer.create({
         questionId: input.questionId,
-        userId: input.userId,
+        userId: viewer._id,
         text: input.text,
       });
       return answer.toObject();
     },
 
-    toggleAnswerUpvote: async (_parent, { input }) => {
+    toggleAnswerUpvote: async (_parent, { input }, context) => {
       await connectDB();
+      const viewer = requireViewer(context);
       const answer = await Answer.findOne(idFilter(input.answerId));
       if (!answer) throw notFound("Хариулт олдсонгүй");
       answer.upvotedBy = answer.upvotedBy ?? [];
-      const index = answer.upvotedBy.indexOf(input.userId);
+      const index = answer.upvotedBy.indexOf(viewer._id);
       if (index === -1) {
-        answer.upvotedBy.push(input.userId);
+        answer.upvotedBy.push(viewer._id);
       } else {
         answer.upvotedBy.splice(index, 1);
       }
@@ -237,11 +261,12 @@ export const resolvers = {
       return answer.toObject();
     },
 
-    acceptAnswer: async (_parent, { input }) => {
+    acceptAnswer: async (_parent, { input }, context) => {
       await connectDB();
+      const viewer = requireViewer(context);
       const question = await Question.findOne(idFilter(input.questionId));
       if (!question) throw notFound("Асуулт олдсонгүй");
-      if (question.userId !== input.userId) {
+      if (question.userId !== viewer._id) {
         throw new GraphQLError(
           "Зөвхөн асуултыг асуусан хэрэглэгч хариултыг зөв гэж тэмдэглэх боломжтой"
         );
@@ -255,20 +280,21 @@ export const resolvers = {
     },
 
     // Нэг хэрэглэгч нэг сэтгэгдлийг давхар мэдэгдэхгүй — өмнөх мэдэгдлийг буцаана
-    reportRating: async (_parent, { input }) => {
+    reportRating: async (_parent, { input }, context) => {
       await connectDB();
+      const viewer = requireViewer(context);
       const ratingExists = await Rating.exists(idFilter(input.ratingId));
       if (!ratingExists) throw notFound("Сэтгэгдэл олдсонгүй");
       const existing = await Report.findOne({
         ratingId: input.ratingId,
-        userId: input.userId,
+        userId: viewer._id,
       });
       if (existing) {
         return existing.toObject();
       }
       const report = await Report.create({
         ratingId: input.ratingId,
-        userId: input.userId,
+        userId: viewer._id,
         reason: input.reason,
       });
       return report.toObject();
@@ -276,9 +302,9 @@ export const resolvers = {
 
     // Зөвхөн isAdmin=true хэрэглэгч мэдэгдлийг шийдвэрлэнэ: сэтгэгдлийг
     // устгах (deleteRating=true) эсвэл үл хэрэгсэх (зөвхөн мэдэгдлийг арилгана)
-    resolveReport: async (_parent, { input }) => {
+    resolveReport: async (_parent, { input }, context) => {
       await connectDB();
-      await requireAdmin(input.adminUserId);
+      requireAdmin(context);
       const report = await Report.findOne(idFilter(input.reportId));
       if (!report) throw notFound("Мэдэгдэл олдсонгүй");
       if (input.deleteRating) {
@@ -289,8 +315,9 @@ export const resolvers = {
       return reportCopy;
     },
 
-    addAchievement: async (_parent, { input }) => {
+    addAchievement: async (_parent, { input }, context) => {
       await connectDB();
+      const viewer = requireViewer(context);
       const schoolExists = await School.exists(idFilter(input.schoolId));
       if (!schoolExists) throw notFound("Сургууль олдсонгүй");
       if (input.year < 1900 || input.year > new Date().getFullYear() + 1) {
@@ -298,7 +325,7 @@ export const resolvers = {
       }
       const achievement = await Achievement.create({
         schoolId: input.schoolId,
-        userId: input.userId,
+        userId: viewer._id,
         category: input.category,
         title: input.title,
         year: input.year,
@@ -307,13 +334,14 @@ export const resolvers = {
       return achievement.toObject();
     },
 
-    deleteAchievement: async (_parent, { input }) => {
+    deleteAchievement: async (_parent, { input }, context) => {
       await connectDB();
+      const viewer = requireViewer(context);
       const achievement = await Achievement.findOne(
         idFilter(input.achievementId)
       );
       if (!achievement) throw notFound("Амжилт олдсонгүй");
-      if (achievement.userId !== input.userId) {
+      if (achievement.userId !== viewer._id) {
         throw new GraphQLError(
           "Зөвхөн нэмсэн хэрэглэгч энэ амжилтыг устгах боломжтой"
         );
@@ -323,9 +351,9 @@ export const resolvers = {
     },
 
     // Сургууль нэмэх нь бүх үнэлгээний тулгуур бичлэг үүсгэдэг тул зөвхөн админ.
-    addSchool: async (_parent, { input }) => {
+    addSchool: async (_parent, { input }, context) => {
       await connectDB();
-      await requireAdmin(input.adminUserId);
+      requireAdmin(context);
 
       const schoolName = input.schoolName.trim();
       const location = input.location.trim();
@@ -353,9 +381,9 @@ export const resolvers = {
 
     // Сургууль устгахад түүн рүү заасан бүх бичлэг эзэнгүй үлддэг тул
     // үнэлгээ, асуулт, багш, амжилтыг цуг цэвэрлэнэ.
-    deleteSchool: async (_parent, { input }) => {
+    deleteSchool: async (_parent, { input }, context) => {
       await connectDB();
-      await requireAdmin(input.adminUserId);
+      requireAdmin(context);
 
       const school = await School.findOne(idFilter(input.schoolId));
       if (!school) throw notFound("Сургууль олдсонгүй");
@@ -397,9 +425,9 @@ export const resolvers = {
 
     // Сургуулийн үндсэн мэдээллийг зөвхөн админ засна — нэр, байршил нь
     // бүх үнэлгээний тулгуур мэдээлэл тул санамсаргүй өөрчлөгдөх ёсгүй.
-    updateSchoolInfo: async (_parent, { input }) => {
+    updateSchoolInfo: async (_parent, { input }, context) => {
       await connectDB();
-      await requireAdmin(input.adminUserId);
+      requireAdmin(context);
       const schoolName = input.schoolName.trim();
       const location = input.location.trim();
       if (!schoolName) {
@@ -418,8 +446,9 @@ export const resolvers = {
       return school.toObject();
     },
 
-    updateSchoolFees: async (_parent, { input }) => {
+    updateSchoolFees: async (_parent, { input }, context) => {
       await connectDB();
+      requireAdmin(context);
       if (input.semesterFee < 0 || input.dormFee < 0) {
         throw new GraphQLError("Төлбөрийн дүн сөрөг байж болохгүй");
       }
@@ -433,8 +462,9 @@ export const resolvers = {
       return school.toObject();
     },
 
-    updateAdmissionInfo: async (_parent, { input }) => {
+    updateAdmissionInfo: async (_parent, { input }, context) => {
       await connectDB();
+      requireAdmin(context);
       const school = await School.findOne(idFilter(input.schoolId));
       if (!school) throw notFound("Сургууль олдсонгүй");
       school.admissionThreshold = input.admissionThreshold;
@@ -445,8 +475,9 @@ export const resolvers = {
       return school.toObject();
     },
 
-    addSchoolPhoto: async (_parent, { input }) => {
+    addSchoolPhoto: async (_parent, { input }, context) => {
       await connectDB();
+      requireAdmin(context);
       if (!input.photoBase64 || input.photoBase64.length === 0) {
         throw new GraphQLError("Зураг хоосон байна");
       }
@@ -464,8 +495,9 @@ export const resolvers = {
       return school.toObject();
     },
 
-    removeSchoolPhoto: async (_parent, { input }) => {
+    removeSchoolPhoto: async (_parent, { input }, context) => {
       await connectDB();
+      requireAdmin(context);
       const school = await School.findOne(idFilter(input.schoolId));
       if (!school) throw notFound("Сургууль олдсонгүй");
       school.photos = school.photos ?? [];
@@ -477,9 +509,10 @@ export const resolvers = {
       return school.toObject();
     },
 
-    toggleFavoriteSchool: async (_parent, { input }) => {
+    toggleFavoriteSchool: async (_parent, { input }, context) => {
       await connectDB();
-      const user = await User.findOne(idFilter(input.userId));
+      const viewer = requireViewer(context);
+      const user = await User.findOne(idFilter(viewer._id));
       if (!user) throw notFound("Хэрэглэгч олдсонгүй");
       const schoolExists = await School.exists(idFilter(input.schoolId));
       if (!schoolExists) throw notFound("Сургууль олдсонгүй");
@@ -494,23 +527,31 @@ export const resolvers = {
       return user.toObject();
     },
 
-    deleteRating: async (_parent, { _id }) => {
+    // Хэрэглэгч зөвхөн ӨӨРИЙН үнэлгээг устгана; админ бүгдийг устгаж чадна.
+    deleteRating: async (_parent, { _id }, context) => {
       await connectDB();
-      const removed = await Rating.findOneAndDelete(idFilter(_id)).lean();
-      if (!removed) throw notFound("Үнэлгээ олдсонгүй");
-      return removed;
+      const viewer = requireViewer(context);
+      const rating = await Rating.findOne(idFilter(_id)).lean();
+      if (!rating) throw notFound("Үнэлгээ олдсонгүй");
+      if (String(rating.userId) !== String(viewer._id) && !viewer.isAdmin) {
+        throw new GraphQLError("Зөвхөн өөрийн үнэлгээг устгах боломжтой", {
+          extensions: { code: "FORBIDDEN" },
+        });
+      }
+      await Rating.deleteOne(idFilter(_id));
+      return rating;
     },
 
     // Хэрэглэгчийг устгахад түүний үлдээсэн бүх контентыг цуг арилгана —
     // эс тэгвэл өнчин баримт үлдэж, сургуулийн дундаж оноо буруу тооцогдоно.
-    deleteUser: async (_parent, { input }) => {
+    deleteUser: async (_parent, { input }, context) => {
       await connectDB();
-      await requireAdmin(input.adminUserId);
+      const viewer = requireAdmin(context);
       const user = await User.findOne(idFilter(input.userId));
       if (!user) throw notFound("Хэрэглэгч олдсонгүй");
 
       const userId = String(user._id);
-      if (userId === String(input.adminUserId)) {
+      if (userId === String(viewer._id)) {
         throw new GraphQLError("Өөрийн бүртгэлийг устгах боломжгүй");
       }
 
@@ -552,10 +593,11 @@ export const resolvers = {
       return removed;
     },
 
-    editRating: async (_parent, { input }) => {
+    editRating: async (_parent, { input }, context) => {
       await connectDB();
+      const viewer = requireViewer(context);
       const rating = await Rating.findOne({
-        userId: input.userId,
+        userId: viewer._id,
         schoolId: input.schoolId,
       });
       if (!rating) throw notFound("Үнэлгээ олдсонгүй");
@@ -565,13 +607,14 @@ export const resolvers = {
       return rating.toObject();
     },
 
-    editUser: async (_parent, { input }) => {
+    editUser: async (_parent, { input }, context) => {
       await connectDB();
-      const user = await User.findOne(idFilter(input.userId));
+      const viewer = requireViewer(context);
+      const user = await User.findOne(idFilter(viewer._id));
       if (!user) throw notFound("Хэрэглэгч олдсонгүй");
-      const excludedIds = mongoose.isValidObjectId(input.userId)
-        ? [input.userId, new mongoose.Types.ObjectId(input.userId)]
-        : [input.userId];
+      const excludedIds = mongoose.isValidObjectId(viewer._id)
+        ? [viewer._id, new mongoose.Types.ObjectId(viewer._id)]
+        : [viewer._id];
       const phoneTaken = await User.findOne({
         _id: { $nin: excludedIds },
         phoneNumber: input.phoneNumber,
