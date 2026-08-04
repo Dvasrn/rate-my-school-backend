@@ -14,6 +14,9 @@ type Query {
   getTeacherRatings(teacherId: ID!): [teacherRating!]!
   getTeachersBySchool(schoolId: ID!): [teacher!]!
   getUserRating(id: ID!): [rating!]!
+  # Зургууд хүнд тул жагсаалтын query-д оруулахгүй, дэлгэрэнгүй хуудсанд
+  # тусад нь татна.
+  getSchoolPhotos(schoolId: ID!): [String!]!
 }
 
 type Mutation {
@@ -33,6 +36,8 @@ type Mutation {
   deleteUser(input: deleteUserInput!): user!
   editRating(input: ratingInput!): rating!
   editUser(input: editUserInput!): user!
+  # Төхөөрөмжийн push токеныг бүртгэнэ. Хоосон утга илгээвэл мэдэгдэл унтарна.
+  registerPushToken(token: String!): user!
   login(input: loginInput!): user!
   removeSchoolPhoto(input: removeSchoolPhotoInput!): School!
   signIn(input: userInput!): user!

@@ -13,6 +13,7 @@ import { Report } from "./models/Report.js";
 import { hashPassword, verifyPassword } from "./auth.js";
 import { idFilter } from "./ids.js";
 import { createToken } from "./token.js";
+import { sendPush } from "./push.js";
 
 const notFound = (message) =>
   new GraphQLError(message, { extensions: { code: "NOT_FOUND" } });
@@ -42,9 +43,10 @@ const requireAdmin = (context) => {
   return viewer;
 };
 
-// ~1.5MB тайлбарласан хэмжээ — MongoDB баримт бичгийн 16MB хязгаараас хол
-// байлгаж, олон зураг нэмэгдэхэд сан хэт хүнд болохоос сэргийлнэ.
-const MAX_PHOTO_BASE64_LENGTH = 2_000_000;
+// Зургууд баримт дотор base64-ээр хадгалагддаг тул НИЙТ хэмжээ нь MongoDB-ийн
+// 16MB баримтын хязгаараас доогуур байх ёстой. 12 x 2MB = 24MB нь хязгаараас
+// давдаг байсан; 12 x 1MB = 12MB нь аюулгүй зайд багтана.
+const MAX_PHOTO_BASE64_LENGTH = 1_000_000;
 const MAX_PHOTOS_PER_SCHOOL = 12;
 
 export const resolvers = {
@@ -102,6 +104,14 @@ export const resolvers = {
     getAnswersByQuestion: async (_parent, { questionId }) => {
       await connectDB();
       return Answer.find({ questionId }).sort({ createdAt: 1 }).lean();
+    },
+    getSchoolPhotos: async (_parent, { schoolId }) => {
+      await connectDB();
+      const school = await School.findOne(idFilter(schoolId))
+        .select("photos")
+        .lean();
+      if (!school) throw notFound("Сургууль олдсонгүй");
+      return school.photos ?? [];
     },
     getAchievementsBySchool: async (_parent, { schoolId }) => {
       await connectDB();
@@ -235,13 +245,30 @@ export const resolvers = {
     addAnswer: async (_parent, { input }, context) => {
       await connectDB();
       const viewer = requireViewer(context);
-      const questionExists = await Question.exists(idFilter(input.questionId));
-      if (!questionExists) throw notFound("Асуулт олдсонгүй");
+      const question = await Question.findOne(idFilter(input.questionId)).lean();
+      if (!question) throw notFound("Асуулт олдсонгүй");
       const answer = await Answer.create({
         questionId: input.questionId,
         userId: viewer._id,
         text: input.text,
       });
+
+      // Асуулт тавьсан хүнд мэдэгдэнэ — өөрөө өөртөө хариулсан бол хэрэггүй.
+      if (String(question.userId) !== String(viewer._id)) {
+        const author = await User.findOne(idFilter(question.userId))
+          .select("pushToken")
+          .lean();
+        if (author?.pushToken) {
+          // Мэдэгдэл амжилтгүй болсон ч хариулт хадгалагдсан хэвээр байх ёстой.
+          await sendPush({
+            to: author.pushToken,
+            title: "Таны асуултад хариулт ирлээ",
+            body: input.text.slice(0, 120),
+            data: { questionId: String(question._id) },
+          });
+        }
+      }
+
       return answer.toObject();
     },
 
@@ -477,7 +504,7 @@ export const resolvers = {
 
     addSchoolPhoto: async (_parent, { input }, context) => {
       await connectDB();
-      requireAdmin(context);
+      requireViewer(context);
       if (!input.photoBase64 || input.photoBase64.length === 0) {
         throw new GraphQLError("Зураг хоосон байна");
       }
@@ -497,7 +524,7 @@ export const resolvers = {
 
     removeSchoolPhoto: async (_parent, { input }, context) => {
       await connectDB();
-      requireAdmin(context);
+      requireViewer(context);
       const school = await School.findOne(idFilter(input.schoolId));
       if (!school) throw notFound("Сургууль олдсонгүй");
       school.photos = school.photos ?? [];
@@ -605,6 +632,16 @@ export const resolvers = {
       rating.scores = { ...input.scores };
       await rating.save();
       return rating.toObject();
+    },
+
+    registerPushToken: async (_parent, { token }, context) => {
+      await connectDB();
+      const viewer = requireViewer(context);
+      const user = await User.findOne(idFilter(viewer._id));
+      if (!user) throw notFound("Хэрэглэгч олдсонгүй");
+      user.pushToken = token ?? "";
+      await user.save();
+      return user.toObject();
     },
 
     editUser: async (_parent, { input }, context) => {

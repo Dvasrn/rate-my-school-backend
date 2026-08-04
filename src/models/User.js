@@ -23,6 +23,8 @@ const userSchema = new mongoose.Schema(
     schools: { type: [userSchoolSchema], default: [] },
     favoriteSchoolIds: { type: [String], default: [] },
     isAdmin: { type: Boolean, default: false },
+    // Expo push токен — асуултад хариулт ирэхэд мэдэгдэл илгээхэд ашиглана.
+    pushToken: { type: String, default: "" },
   },
   { versionKey: false }
 );
